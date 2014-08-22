@@ -10,6 +10,8 @@ import com.gmsd.model.request.*;
 import com.gmsd.model.response.*;
 import com.gmsd.sdk.Gongming;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +22,7 @@ public class Application {
 
   private static Long merchantId = 1L;
   private static String merchantSecret = "ABCDEFG1234ABCDEFG1234";
+  private static final Long MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000L;
 
   public Application() {
   }
@@ -59,13 +62,19 @@ public class Application {
       QueryPlansResponse queryPlansResponse = gongming.queryPlans(queryPlansRequest);
       logger.log(Level.INFO, "查询理财计划成功，返回理财计划" + queryPlansResponse.plans.size() + "个");
 
-      Long planId = queryPlansResponse.plans.size() == 0 ? 1L : queryPlansResponse.plans.get(0).id;
+      if (queryPlansResponse.plans.size() == 0) {
+        logger.log(Level.INFO, "当前没有可购买的理财计划，退出");
+        return;
+      }
+
+      Long planId = queryPlansResponse.plans.get(0).id;
+      String bidAmount = queryPlansResponse.plans.get(0).minAmount;
 
       logger.log(Level.INFO, "理财计划申购");
       OrderRequest orderRequest = new OrderRequest(
           merchantId,             // 商户号
           userId,                 // 理财账户号
-          "5.00",                 // 申购金额
+          bidAmount,              // 申购金额
           "11100003431",          // 商户请求ID
           planId                  // 计划ID
       );
@@ -84,11 +93,15 @@ public class Application {
       QueryOrderResponse queryOrderResponse = gongming.queryOrder(queryOrderRequest);
       logger.log(Level.INFO, "订单查询成功，状态为" + queryOrderResponse.order.status.toString() + "");
 
-      logger.log(Level.INFO, "按日期查询订单");
+      SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+      String startDate = simpleDateFormat.format(new Date());
+      String endDate = simpleDateFormat.format(new Date(System.currentTimeMillis() + 1 * MILLISECONDS_PER_DAY));
+
+      logger.log(Level.INFO, "按日期查询订单，查询日期区间： " + startDate + " 到 " + endDate);
       QueryOrdersByDateRequest queryOrderByDateRequest = new QueryOrdersByDateRequest(
           merchantId,             // 商户号
-          "2014-06-01",           // 范围开始日期
-          "2014-12-31"            // 范围结束日期
+          startDate,              // 范围开始日期
+          endDate                 // 范围结束日期
       );
       QueryOrdersByDateResponse queryOrdersByDateResponse = gongming.queryOrderByDate(queryOrderByDateRequest);
       logger.log(Level.INFO, "按日期查询订单成功，共有" + queryOrdersByDateResponse.orders.size() + "个订单");

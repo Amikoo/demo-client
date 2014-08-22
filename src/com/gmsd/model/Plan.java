@@ -53,6 +53,22 @@ public class Plan {
    */
   public String maxInterest;
 
+
+  /**
+   * 加入额度的下限 （0表示没有限制）
+   */
+  public String minAmount;
+
+  /**
+   * 加入额度的上限 （0表示没有限制）
+   */
+  public String maxAmount;
+
+  /**
+   * 加入额度的基数 （0表示没有限制）
+   */
+  public String baseAmount;
+
   /**
    * 计划总额度
    */
@@ -69,7 +85,22 @@ public class Plan {
   public String paidAmount;
 
   /**
+   * 创建时间
+   */
+  public Long createTimestamp;
+
+  /**
    * 计划类别
    */
   public PlanType type;
+
+  /**
+   * 计划状态
+   */
+  public PlanStatus status;
+
+  /**
+   * 销售方式
+   */
+  public SaleType saleType;
 }
